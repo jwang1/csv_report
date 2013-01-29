@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CSV Report</title>
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+    </head>
+
+    <body>
+        <h1>CSV Report</h1>
+        <p>Input:</p>
+        <textarea id='input' cols="40" rows="12">
+        </textarea>
+        <br>
+        <!--button id='calculate' onclick="processData($("#input").val())">Calculate</button-->
+        <button id='calculate'>Calculate</button>
+        <p>Report</p>
+        <div id='report'>
+            <!-- Report comes here -->
+			<textarea id='output' cols="40" rows="12"></textarea>
+        </div>
+
+
+<script src="jquery.min.js"></script>
+
+	<script type="text/javascript">
+
+		$(document).ready(function() {
+
+			$("button").click(function() {
+				var csv = $("#input").val();
+
+				if(typeof csv != 'undefined') {
+					csv = $.trim(csv);
+				}
+
+				if(typeof csv == 'undefined' || !csv || csv.length == 0) {
+					$("#output").val("Please input some CSV data in the above textarea");
+				} else {
+					//alert(csv);
+					var objs = parsing(csv);
+
+					$("#output").val(processing(objs));
+				}
+			});
+
+
+			/*********************************************************************************\
+			 * Simply recording the Event record                                             *
+			 *********************************************************************************/
+			function personEvent(name, time, loc) {
+				this.name = name;
+				this.time = time;
+				this.loc = loc;
+			}
+
+
+			/*********************************************************************************\
+			 * Accummulation and Average time                                                *
+			 *********************************************************************************/
+			function personResult(name, eventNbrs, time) {
+
+				this.getAverageTime = function() {
+					return (this.totalTime / this.totalEvents);
+				},
+
+				this.name = name;
+
+				if(typeof(this.totalEvents) == 'undefined' || isNaN(this.totalEvents))
+					this.totalEvents = 1;
+				else 									
+					this.totalEvents += parseFloat(eventNbrs);
+				
+				if(typeof(this.totalTime) == 'undefined' || isNaN(this.totalTime))
+					this.totalTime = parseFloat(time);
+				else
+					this.totalTime += parseFloat(time);
+
+			}
+
+			
+			/*********************************************************************************\
+			 * Parsing the CSV data                                                          *
+			 *********************************************************************************/
+			function parsing(text) {
+				var records = text.split(/\r\n|\n/);
+				//alert(records);
+				//var headers = records[0].split(',');
+				var rows = [];
+
+				for (var i=0; i<records.length; i++) {
+					var cols = records[i].split(',');
+
+					var pe = new personEvent(cols[0], cols[1], cols[2]);
+					rows.push(pe);
+
+				}
+
+				return rows;
+			}
+
+
+			/*********************************************************************************\
+			 * Processing the average time (TODO: time can improve once know more JQuery)    *
+			 *********************************************************************************/
+			function processing(personEvents) {
+				var report = "";
+				var obj;
+				var personResults = [];
+
+				var pR;
+
+				var personExisting = false;
+
+				for(var i=0; i < personEvents.length; i++) {
+					for(var j=0; j < personResults.length; j++) {
+						if(personEvents[i].name == personResults[j].name) {
+							personExisting = true;
+							break;
+						}
+					}
+
+					if(personExisting) {
+						personExisting = false;
+
+						pR = personResults[j];
+						pR.totalEvents += parseFloat(1);
+						pR.totalTime  += parseFloat(personEvents[i].time);
+
+					} else {
+						pR = new personResult(personEvents[i].name, 1, personEvents[i].time);	
+						personResults.push(pR);
+					}
+				}
+
+
+				report = "Name : Total Time : # of Events : Average Time\r";
+				for(var i=0; i < personResults.length; i++) {
+					report += personResults[i].name + " : " + personResults[i].totalTime + " : " +  personResults[i].totalEvents + " : " + personResults[i].getAverageTime() + "\r";
+				}
+
+				return report;
+			}
+
+		});
+
+
+	</script>
+
+    </body>
+
+</html>
