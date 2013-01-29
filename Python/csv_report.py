@@ -5,10 +5,13 @@ def main():
 		fin = open('../data/test.csv')
 	except:
 		try:
-			fin = open('test.csv')
+			fin = open('data/test.csv')
 		except:
-			print('\nPlease make sure testing data named as "test.csv", either in current-working-directory, or sibling-directory of data/test.csv\n')
-			return 1
+			try:
+				fin = open('test.csv')
+			except:
+				print('\nPlease make sure testing data named as "test.csv", either in current-working-directory, or sibling-directory of data/test.csv\n')
+				return 1
 
 	#------------------------------------------------------
 	# dictionary with key of 'name'  and 
